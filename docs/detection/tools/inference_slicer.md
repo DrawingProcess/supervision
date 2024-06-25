@@ -1,7 +1,8 @@
 ---
 comments: true
+status: new
 ---
 
-## InferenceSlicer
+# InferenceSlicer
 
 :::supervision.detection.tools.inference_slicer.InferenceSlicer

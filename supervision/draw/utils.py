@@ -81,6 +81,58 @@ def draw_filled_rectangle(scene: np.ndarray, rect: Rect, color: Color) -> np.nda
     return scene
 
 
+def draw_rounded_rectangle(
+    scene: np.ndarray,
+    rect: Rect,
+    color: Color,
+    border_radius: int,
+) -> np.ndarray:
+    """
+    Draws a rounded rectangle on an image.
+
+    Parameters:
+        scene (np.ndarray): The image on which the rounded rectangle will be drawn.
+        rect (Rect): The rectangle to be drawn.
+        color (Color): The color of the rounded rectangle.
+        border_radius (int): The radius of the corner rounding.
+
+    Returns:
+        np.ndarray: The image with the rounded rectangle drawn on it.
+    """
+    x1, y1, x2, y2 = rect.as_xyxy_int_tuple()
+    width, height = x2 - x1, y2 - y1
+    border_radius = min(border_radius, min(width, height) // 2)
+
+    rectangle_coordinates = [
+        ((x1 + border_radius, y1), (x2 - border_radius, y2)),
+        ((x1, y1 + border_radius), (x2, y2 - border_radius)),
+    ]
+    circle_centers = [
+        (x1 + border_radius, y1 + border_radius),
+        (x2 - border_radius, y1 + border_radius),
+        (x1 + border_radius, y2 - border_radius),
+        (x2 - border_radius, y2 - border_radius),
+    ]
+
+    for coordinates in rectangle_coordinates:
+        cv2.rectangle(
+            img=scene,
+            pt1=coordinates[0],
+            pt2=coordinates[1],
+            color=color.as_bgr(),
+            thickness=-1,
+        )
+    for center in circle_centers:
+        cv2.circle(
+            img=scene,
+            center=center,
+            radius=border_radius,
+            color=color.as_bgr(),
+            thickness=-1,
+        )
+    return scene
+
+
 def draw_polygon(
     scene: np.ndarray, polygon: np.ndarray, color: Color, thickness: int = 2
 ) -> np.ndarray:
@@ -135,9 +187,11 @@ def draw_text(
 
     Examples:
         ```python
-        >>> scene = np.zeros((100, 100, 3), dtype=np.uint8)
-        >>> text_anchor = Point(x=50, y=50)
-        >>> scene = draw_text(scene=scene, text="Hello, world!",text_anchor=text_anchor)
+        import numpy as np
+
+        scene = np.zeros((100, 100, 3), dtype=np.uint8)
+        text_anchor = Point(x=50, y=50)
+        scene = draw_text(scene=scene, text="Hello, world!",text_anchor=text_anchor)
         ```
     """
     text_width, text_height = cv2.getTextSize(
@@ -146,9 +200,12 @@ def draw_text(
         fontScale=text_scale,
         thickness=text_thickness,
     )[0]
+
+    text_anchor_x, text_anchor_y = text_anchor.as_xy_int_tuple()
+
     text_rect = Rect(
-        x=text_anchor.x - text_width // 2,
-        y=text_anchor.y - text_height // 2,
+        x=text_anchor_x - text_width // 2,
+        y=text_anchor_y - text_height // 2,
         width=text_width,
         height=text_height,
     ).pad(text_padding)
@@ -161,7 +218,7 @@ def draw_text(
     cv2.putText(
         img=scene,
         text=text,
-        org=(text_anchor.x - text_width // 2, text_anchor.y + text_height // 2),
+        org=(text_anchor_x - text_width // 2, text_anchor_y + text_height // 2),
         fontFace=text_font,
         fontScale=text_scale,
         color=text_color.as_bgr(),
@@ -233,13 +290,13 @@ def draw_image(
     return scene
 
 
-def calculate_dynamic_text_scale(resolution_wh: Tuple[int, int]) -> float:
+def calculate_optimal_text_scale(resolution_wh: Tuple[int, int]) -> float:
     """
-    Calculate a dynamic font scale based on the resolution of an image.
+    Calculate font scale based on the resolution of an image.
 
     Parameters:
          resolution_wh (Tuple[int, int]): A tuple representing the width and height
-                 of the image.
+             of the image.
 
     Returns:
          float: The calculated font scale factor.
@@ -247,25 +304,17 @@ def calculate_dynamic_text_scale(resolution_wh: Tuple[int, int]) -> float:
     return min(resolution_wh) * 1e-3
 
 
-def calculate_dynamic_line_thickness(resolution_wh: Tuple[int, int]) -> int:
+def calculate_optimal_line_thickness(resolution_wh: Tuple[int, int]) -> int:
     """
-    Calculate a dynamic line thickness based on the resolution of an image.
+    Calculate line thickness based on the resolution of an image.
 
     Parameters:
         resolution_wh (Tuple[int, int]): A tuple representing the width and height
-                of the image.
+            of the image.
 
     Returns:
         int: The calculated line thickness in pixels.
     """
-    min_dimension = min(resolution_wh)
-    if min_dimension < 480:
+    if min(resolution_wh) < 1080:
         return 2
-    if min_dimension < 720:
-        return 2
-    if min_dimension < 1080:
-        return 2
-    if min_dimension < 2160:
-        return 4
-    else:
-        return 4
+    return 4

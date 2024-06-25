@@ -52,7 +52,7 @@ git push -u origin main
 
 ### Pre-commit tool
 
-This project utilizes the [pre-commit](https://pre-commit.com/) tool to maintain code quality and consistency. Before submitting a pull request or making any commits, it is important to run the pre-commit tool to ensure that your changes meet the project's guidelines.
+This project uses the [pre-commit](https://pre-commit.com/) tool to maintain code quality and consistency. Before submitting a pull request or making any commits, it is important to run the pre-commit tool to ensure that your changes meet the project's guidelines.
 
 Furthermore, we have integrated a pre-commit GitHub Action into our workflow. This means that with every pull request opened, the pre-commit checks will be automatically enforced, streamlining the code review process and ensuring that all contributions adhere to our quality standards.
 
@@ -64,7 +64,7 @@ To run the pre-commit tool, follow these steps:
 
 3. Run the command `pre-commit run --all-files`. This will execute the pre-commit hooks configured for this project against the modified files. If any issues are found, the pre-commit tool will provide feedback on how to resolve them. Make the necessary changes and re-run the pre-commit command until all issues are resolved.
 
-4. You can also install pre-commit as a git hook by execute `pre-commit install`. Every time you made `git commit` pre-commit run automatically for you.
+4. You can also install pre-commit as a git hook by executing `pre-commit install`. Every time you do a `git commit` pre-commit run automatically for you.
 
 ### Docstrings
 
@@ -111,6 +111,20 @@ The `supervision` documentation is stored in a folder called `docs`. The project
 To run the documentation, install the project requirements with `poetry install --with dev`. Then, run `mkdocs serve` to start the documentation server.
 
 You can learn more about mkdocs on the [mkdocs website](https://www.mkdocs.org/).
+
+## 🧑‍🍳 cookbooks
+
+We are always looking for new examples and cookbooks to add to the `supervision`
+documentation. If you have a use case that you think would be helpful to others, please
+submit a PR with your example. Here are some guidelines for submitting a new example:
+
+- Create a new notebook in the [`docs/nodebooks`](https://github.com/roboflow/supervision/tree/develop/docs/notebooks) folder.
+- Add a link to the new notebook in [`docs/theme/cookbooks.html`](https://github.com/roboflow/supervision/blob/develop/docs/theme/cookbooks.html). Make sure to add the path to the new notebook, as well as a title, labels, author and supervision version.
+- Use the [Count Objects Crossing the Line](https://supervision.roboflow.com/develop/notebooks/count-objects-crossing-the-line/) example as a template for your new example.
+- Freeze the version of `supervision` you are using.
+- Place an appropriate Open in Colab button at the top of the notebook. You can find an example of such a button in the aforementioned `Count Objects Crossing the Line` cookbook.
+- Notebook should be self-contained. If you rely on external data ( videos, images, etc.) or libraries, include download and installation commands in the notebook.
+- Annotate the code with appropriate comments, including links to the documentation describing each of the tools you have used.
 
 ## 🧪 tests
 

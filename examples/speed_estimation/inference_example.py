@@ -30,6 +30,9 @@ class ViewTransformer:
         self.m = cv2.getPerspectiveTransform(source, target)
 
     def transform_points(self, points: np.ndarray) -> np.ndarray:
+        if points.size == 0:
+            return points
+
         reshaped_points = points.reshape(-1, 1, 2).astype(np.float32)
         transformed_points = cv2.perspectiveTransform(reshaped_points, self.m)
         return transformed_points.reshape(-1, 2)
@@ -95,10 +98,10 @@ if __name__ == "__main__":
         frame_rate=video_info.fps, track_thresh=args.confidence_threshold
     )
 
-    thickness = sv.calculate_dynamic_line_thickness(
+    thickness = sv.calculate_optimal_line_thickness(
         resolution_wh=video_info.resolution_wh
     )
-    text_scale = sv.calculate_dynamic_text_scale(resolution_wh=video_info.resolution_wh)
+    text_scale = sv.calculate_optimal_text_scale(resolution_wh=video_info.resolution_wh)
     bounding_box_annotator = sv.BoundingBoxAnnotator(thickness=thickness)
     label_annotator = sv.LabelAnnotator(
         text_scale=text_scale,
@@ -113,9 +116,7 @@ if __name__ == "__main__":
 
     frame_generator = sv.get_video_frames_generator(source_path=args.source_video_path)
 
-    polygon_zone = sv.PolygonZone(
-        polygon=SOURCE, frame_resolution_wh=video_info.resolution_wh
-    )
+    polygon_zone = sv.PolygonZone(polygon=SOURCE)
     view_transformer = ViewTransformer(source=SOURCE, target=TARGET)
 
     coordinates = defaultdict(lambda: deque(maxlen=video_info.fps))

@@ -1,10 +1,12 @@
 from typing import List, Optional, Union
 
 import cv2
-import numpy as np
 
+from supervision.annotators.base import ImageType
 from supervision.detection.core import Detections
 from supervision.draw.color import Color, ColorPalette
+from supervision.utils.conversion import convert_for_annotation_method
+from supervision.utils.internal import deprecated
 
 
 class BoxAnnotator:
@@ -26,7 +28,7 @@ class BoxAnnotator:
 
     def __init__(
         self,
-        color: Union[Color, ColorPalette] = ColorPalette.default(),
+        color: Union[Color, ColorPalette] = ColorPalette.DEFAULT,
         thickness: int = 2,
         text_color: Color = Color.BLACK,
         text_scale: float = 0.5,
@@ -40,18 +42,25 @@ class BoxAnnotator:
         self.text_thickness: int = text_thickness
         self.text_padding: int = text_padding
 
+    @deprecated(
+        "`BoxAnnotator` is deprecated and will be removed in "
+        "`supervision-0.22.0`. Use `BoundingBoxAnnotator` and `LabelAnnotator` instead"
+    )
+    @convert_for_annotation_method
     def annotate(
         self,
-        scene: np.ndarray,
+        scene: ImageType,
         detections: Detections,
         labels: Optional[List[str]] = None,
         skip_label: bool = False,
-    ) -> np.ndarray:
+    ) -> ImageType:
         """
         Draws bounding boxes on the frame using the detections provided.
 
         Args:
-            scene (np.ndarray): The image on which the bounding boxes will be drawn
+            scene (ImageType): The image on which the bounding boxes will be drawn.
+                `ImageType` is a flexible type, accepting either `numpy.ndarray`
+                or `PIL.Image.Image`.
             detections (Detections): The detections for which the
                 bounding boxes will be drawn
             labels (Optional[List[str]]): An optional list of labels
@@ -59,27 +68,27 @@ class BoxAnnotator:
                 corresponding `class_id` will be used as label.
             skip_label (bool): Is set to `True`, skips bounding box label annotation.
         Returns:
-            np.ndarray: The image with the bounding boxes drawn on it
+            ImageType: The image with the bounding boxes drawn on it, matching the
+                type of `scene` (`numpy.ndarray` or `PIL.Image.Image`)
 
         Example:
             ```python
-            >>> import supervision as sv
+            import supervision as sv
 
-            >>> classes = ['person', ...]
-            >>> image = ...
-            >>> detections = sv.Detections(...)
+            classes = ['person', ...]
+            image = ...
+            detections = sv.Detections(...)
 
-            >>> box_annotator = sv.BoxAnnotator()
-            >>> labels = [
-            ...     f"{classes[class_id]} {confidence:0.2f}"
-            ...     for _, _, confidence, class_id, _
-            ...     in detections
-            ... ]
-            >>> annotated_frame = box_annotator.annotate(
-            ...     scene=image.copy(),
-            ...     detections=detections,
-            ...     labels=labels
-            ... )
+            box_annotator = sv.BoxAnnotator()
+            labels = [
+                f"{classes[class_id]} {confidence:0.2f}"
+                for _, _, confidence, class_id, _ in detections
+            ]
+            annotated_frame = box_annotator.annotate(
+                scene=image.copy(),
+                detections=detections,
+                labels=labels
+            )
             ```
         """
         font = cv2.FONT_HERSHEY_SIMPLEX
